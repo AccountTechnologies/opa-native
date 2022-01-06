@@ -1,5 +1,5 @@
-# opa-server-nuget
-OPA server packaged as NuGet
+# opa-native
+OPA server native binaries packaged as NuGet
 
 # Why?
 
