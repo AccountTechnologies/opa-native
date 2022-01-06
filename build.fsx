@@ -76,7 +76,7 @@ Target.create "gh-release" (fun _ ->
 )
 
 Target.create "nuget-release" <| fun _ ->
-  "src/Atech.Opa.Server" |> NuGet (fun ps ->
+  "src/Atech.Opa.Server/Atech.Opa.Server.csproj" |> NuGet (fun ps ->
     {
       ps with
         AccessKey = Environment.environVar "NUGET_KEY"
