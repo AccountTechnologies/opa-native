@@ -82,14 +82,13 @@ Target.create "nuget-release" <| fun _ ->
         AccessKey = Environment.environVar "NUGET_KEY"
     })
 
-Target.create "all" ignore
-
 "clean"
   =?> ("opa-binaries", newRelease.IsSome)
-  =?> ("gh-release", newRelease.IsSome)
   ==> "nuget-release"
-  =?> ("all", newRelease.IsSome)
 
-let ctx = Target.WithContext.runOrDefault "all"
+"clean"
+  =?> ("gh-release", newRelease.IsSome)
+
+let ctx = Target.WithContext.runOrDefault "clean"
 Target.updateBuildStatus ctx
 Target.raiseIfError ctx
