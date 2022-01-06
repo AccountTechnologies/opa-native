@@ -77,7 +77,15 @@ Target.create "gh-release" (fun _ ->
 
 Target.create "pack" (fun _ ->
     !! "src/**/*.*proj"
-    |> Seq.iter (DotNet.pack (fun ps -> { ps with Configuration = DotNet.BuildConfiguration.Release} ))
+    |> Seq.iter (DotNet.pack (fun ps -> 
+      { 
+        ps with 
+          Configuration = DotNet.BuildConfiguration.Release
+          MSBuildParams = {
+            ps.MSBuildParams with
+              Properties = [ "VersionPrefix", Environment.environVarOrDefault "PKGVER" "0.0.0-dev" ]
+          }
+      } ))
 )
 
 Target.create "nuget-release" <| fun _ ->
@@ -87,12 +95,14 @@ Target.create "nuget-release" <| fun _ ->
         ps with
           PushParams = { ps.PushParams with
                           ApiKey = Some (Environment.environVar "NUGET_KEY")
+                          Source = Some ("https://api.nuget.org/v3/index.json")
           }
       }
     )
 
 "clean"
-  =?> ("opa-binaries", newRelease.IsSome)
+  ==> "opa-binaries"
+  ==> "pack"
   ==> "nuget-release"
 
 "clean"
