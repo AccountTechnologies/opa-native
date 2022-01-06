@@ -29,8 +29,20 @@ steps:
     includePreviewVersions: true
 
 - task: Bash@3
+  displayName: GitHub Release
   inputs:
     filePath: fake.sh
-    arguments: run
+    arguments: build --target gh-release
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+
+- task: Bash@3
+  displayName: NuGet Release
+  inputs:
+    filePath: fake.sh
+    arguments: build --target nuget-release
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)
+    NUGET_KEY: $(NUGET_KEY)
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
