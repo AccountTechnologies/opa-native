@@ -82,6 +82,11 @@ Target.create "gh-release" (fun _ ->
 )
 
 Target.create "pack" (fun _ ->
+    let pkgVer = 
+      match Environment.environVarOrNone "PKGVER" with
+      | None -> "0.0.0-dev"
+      | Some v -> v[1..]
+   
     !! "src/**/*.*proj"
     |> Seq.iter (DotNet.pack (fun ps -> 
       { 
@@ -89,7 +94,7 @@ Target.create "pack" (fun _ ->
           Configuration = DotNet.BuildConfiguration.Release
           MSBuildParams = {
             ps.MSBuildParams with
-              Properties = [ "VersionPrefix", Environment.environVarOrDefault "PKGVER" "0.0.0-dev" ]
+              Properties = [ "VersionPrefix", pkgVer ]
           }
       } ))
 )
