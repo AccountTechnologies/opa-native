@@ -15,7 +15,7 @@ open Octokit
 
 Target.initEnvironment ()
 
-let ghClient () = 
+let ghClient = 
   Environment.environVar "GITHUB_TOKEN" |> GitHub.createClientWithToken
 
 let owner = "AccountTechnologies"
@@ -33,7 +33,7 @@ let needRelease (client:Async<GitHubClient>) =
   }
 
 let newRelease =
-  let maybeRelease = ghClient () |> needRelease |> Async.RunSynchronously
+  let maybeRelease = ghClient |> needRelease |> Async.RunSynchronously
   
   if maybeRelease.IsNone then
     Trace.logfn "Up to date. Nothing left to do."
@@ -46,13 +46,19 @@ Target.create "clean" (fun _ ->
     |> Shell.cleanDirs
 )
 
-let getOpaBinaries () = 
-  async {
-    Directory.create ".binaries"
-    do! async.Return(newRelease.Value) |> GitHub.downloadAssets ".binaries"
-  }
 
 Target.create "opa-binaries" (fun _ ->
+
+  let getOpaBinaries () = 
+    async {
+      Directory.create ".binaries"
+      let release =
+        match newRelease with
+        | Some r -> r |> async.Return
+        | None -> ghClient |> GitHub.getReleaseByTag owner repoName (Environment.environVar "PKGVER")
+
+      do! release |> GitHub.downloadAssets ".binaries"
+    }
 
   getOpaBinaries () |> Async.RunSynchronously
 )
@@ -69,7 +75,7 @@ Target.create "gh-release" (fun _ ->
         Prerelease = false
     }
 
-  ghClient()
+  ghClient
   |> GitHub.createRelease owner repoName srcTagName settings
   |> Async.RunSynchronously
   |> ignore
