@@ -75,12 +75,21 @@ Target.create "gh-release" (fun _ ->
   |> ignore
 )
 
+Target.create "pack" (fun _ ->
+    !! "src/**/*.*proj"
+    |> Seq.iter (DotNet.pack (fun ps -> { ps with Configuration = DotNet.BuildConfiguration.Release} ))
+)
+
 Target.create "nuget-release" <| fun _ ->
-  "src/Atech.Opa.Server/Atech.Opa.Server.csproj" |> NuGet (fun ps ->
-    {
-      ps with
-        AccessKey = Environment.environVar "NUGET_KEY"
-    })
+  for pkg in !! "src/**/*.nupkg" do
+
+    pkg |> DotNet.nugetPush (fun ps -> {
+        ps with
+          PushParams = { ps.PushParams with
+                          ApiKey = Some (Environment.environVar "NUGET_KEY")
+          }
+      }
+    )
 
 "clean"
   =?> ("opa-binaries", newRelease.IsSome)
