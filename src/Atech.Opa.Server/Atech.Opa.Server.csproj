@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RuntimeIdentifiers>win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../.binaries/opa_windows_amd64.exe" Visible="false" Pack="True" PackagePath="runtimes/win-x64/native" />
+    <None Include="../../.binaries/opa_linux_amd64" Visible="false" Pack="True" PackagePath="runtimes/linux-x64/native" />
+    <None Include="../../.binaries/opa_darwin_amd64" Visible="false" Pack="True" PackagePath="runtimes/osx-x64/native" />
+  </ItemGroup>
+
+</Project>
