@@ -32,19 +32,6 @@ steps:
     version: '6.0.x'
     includePreviewVersions: true
 
-- task: DotNetCoreCLI@2
-  displayName: 'Test'
-  inputs:
-    command: 'test'
-    workingDirectory: tests/Opa.Native.Tests.Unit
-  condition: succeeded()
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'NUnit'
-    testResultsFiles: '$(System.DefaultWorkingDirectory)/testResults.xml'
-    failTaskOnFailedTests: true
-
 - task: Bash@3
   displayName: GitHub Release
   inputs:
@@ -62,4 +49,11 @@ steps:
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
     NUGET_KEY: $(NUGET_KEY)
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'NUnit'
+    testResultsFiles: '$(System.DefaultWorkingDirectory)/testResults.xml'
+    failTaskOnFailedTests: true
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))

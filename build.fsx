@@ -39,14 +39,12 @@ let newRelease =
   
   maybeRelease
 
-Target.create "clean" (fun _ ->
+Target.create "clean" <| fun _ ->
     !! "src/**/bin"
     ++ "src/**/obj"
     |> Shell.cleanDirs
-)
 
-
-Target.create "opa-binaries" (fun _ ->
+Target.create "opa-binaries" <| fun _ ->
 
   let getOpaBinaries () = 
     async {
@@ -60,9 +58,9 @@ Target.create "opa-binaries" (fun _ ->
     }
 
   getOpaBinaries () |> Async.RunSynchronously
-)
 
-Target.create "gh-release" (fun _ ->
+
+Target.create "gh-release" <| fun _ ->
 
   let srcTagName = newRelease.Value.Release.TagName
   let settings (ps:GitHub.CreateReleaseParams) =
@@ -78,7 +76,14 @@ Target.create "gh-release" (fun _ ->
   |> GitHub.createRelease targetOwner targetRepoName srcTagName settings
   |> Async.RunSynchronously
   |> ignore
-)
+
+
+Target.create "test" <| fun _ ->
+  "tests/Opa.Native.Tests.Unit" |> DotNet.test (fun ps ->
+    {
+      ps with
+        Logger = Some "trx"
+    })
 
 Target.create "pack" (fun _ ->
     let pkgVer = 
@@ -112,6 +117,7 @@ Target.create "nuget-release" <| fun _ ->
 
 "clean"
   ==> "opa-binaries"
+  ==> "test"
   ==> "pack"
   ==> "nuget-release"
 
