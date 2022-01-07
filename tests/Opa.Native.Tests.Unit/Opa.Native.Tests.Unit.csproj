@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+    <PackageReference Include="NUnit" Version="3.13.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
+    <PackageReference Include="coverlet.collector" Version="3.1.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Opa.Native\Opa.Native.csproj" />
+    <!-- this needs to be imported again because ProjectReference does not support IncludeAssets -->
+    <!-- <None Include="..\..\.binaries\opa_windows_amd64.exe" CopyToOutputDirectory="Always" /> -->
+    <None Include="..\..\.binaries\opa_windows_amd64.exe" Link="runtimes/win-x64/native/opa_windows_amd64.exe" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\.binaries\opa_linux_amd64" Link="runtimes/linux-x64/native/opa_linux_amd64" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\.binaries\opa_darwin_amd64" Link="runtimes/osx-x64/native/opa_darwin_amd64" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="ChmodBinary" AfterTargets="Build" Condition="'$(OS)' != 'Windows_NT'">
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+      <BinaryPath>$(OutDir)runtimes/linux-x64/native/opa_linux_amd64</BinaryPath>
+    </PropertyGroup>
+    <PropertyGroup  Condition="$([MSBuild]::IsOSPlatform('OSX'))">
+      <BinaryPath>$(OutDir)runtimes/osx-x64/native/opa_darwin_amd64</BinaryPath>
+    </PropertyGroup>
+    <Exec EnvironmentVariables="BinaryPath=$BinaryPath" Command="chmod +x $(BinaryPath)" />
+  </Target>
+
+</Project>
