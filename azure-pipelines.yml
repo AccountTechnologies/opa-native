@@ -36,7 +36,7 @@ steps:
   displayName: 'Test'
   inputs:
     command: 'test'
-    workingDirectory: tests
+    workingDirectory: tests/Opa.Native.Tests.Unit
   condition: succeeded()
 
 - task: PublishTestResults@2
