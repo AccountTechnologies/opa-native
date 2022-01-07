@@ -18,15 +18,17 @@ Target.initEnvironment ()
 let ghClient = 
   Environment.environVar "GITHUB_TOKEN" |> GitHub.createClientWithToken
 
-let owner = "AccountTechnologies"
-let repoName = "opa-server-nuget"
+let srcOwner = "open-policy-agent"
+let srcRepoName = "opa"
+let targetOwner = "AccountTechnologies"
+let targetRepoName = "opa-server-nuget"
 
 let needRelease (client:Async<GitHubClient>) = 
   async {
     Trace.logfn "open-policy-agent/opa:"
-    let! lastSourceRelease = client |> GitHub.getLastRelease "open-policy-agent" "opa"
+    let! lastSourceRelease = client |> GitHub.getLastRelease srcOwner srcRepoName
     Trace.logfn "AccountTechnologies/opa-server-nuget:"
-    let! lastTargetRelease = client |> GitHub.getLastRelease owner repoName
+    let! lastTargetRelease = client |> GitHub.getLastRelease targetOwner targetRepoName
     return
       if lastSourceRelease.Release.Name = lastTargetRelease.Release.Name
       then None else Some (lastSourceRelease)
@@ -35,9 +37,6 @@ let needRelease (client:Async<GitHubClient>) =
 let newRelease =
   let maybeRelease = ghClient |> needRelease |> Async.RunSynchronously
   
-  if maybeRelease.IsNone then
-    Trace.logfn "Up to date. Nothing left to do."
-
   maybeRelease
 
 Target.create "clean" (fun _ ->
@@ -55,7 +54,7 @@ Target.create "opa-binaries" (fun _ ->
       let release =
         match newRelease with
         | Some r -> r |> async.Return
-        | None -> ghClient |> GitHub.getReleaseByTag owner repoName (Environment.environVar "PKGVER")
+        | None -> ghClient |> GitHub.getReleaseByTag srcOwner srcRepoName (Environment.environVar "PKGVER")
 
       do! release |> GitHub.downloadAssets ".binaries"
     }
@@ -76,7 +75,7 @@ Target.create "gh-release" (fun _ ->
     }
 
   ghClient
-  |> GitHub.createRelease owner repoName srcTagName settings
+  |> GitHub.createRelease targetOwner targetRepoName srcTagName settings
   |> Async.RunSynchronously
   |> ignore
 )

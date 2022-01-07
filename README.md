@@ -1,5 +1,5 @@
 # opa-native
-OPA server native binaries packaged as NuGet
+[OPA](https://github.com/open-policy-agent/opa) server native binaries packaged as NuGet.
 
 # Why?
 
