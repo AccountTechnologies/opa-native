@@ -85,7 +85,7 @@ Target.create "pack" (fun _ ->
     let pkgVer = 
       match Environment.environVarOrNone "PKGVER" with
       | None -> "0.0.0-dev"
-      | Some v -> v[1..]
+      | Some v -> v.[1..]
    
     !! "src/**/*.*proj"
     |> Seq.iter (DotNet.pack (fun ps -> 
