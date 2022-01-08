@@ -36,7 +36,7 @@ steps:
   displayName: Opa Binaries
   inputs:
     filePath: fake.sh
-    arguments: ./fake.sh run build.fsx -t opa-binaries --single-target
+    arguments: run build.fsx -t opa-binaries --single-target
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
   condition: succeeded()
