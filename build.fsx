@@ -116,7 +116,7 @@ Target.create "nuget-release" <| fun _ ->
     )
 
 "clean"
-  ==> "opa-binaries"
+  =?> ("opa-binaries", BuildServer.isLocalBuild)
   ==> "test"
   ==> "pack"
   =?> ("nuget-release", BuildServer.isLocalBuild || Environment.environVar "Agent.OS" = "Linux")

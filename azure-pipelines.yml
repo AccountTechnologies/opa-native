@@ -33,6 +33,30 @@ steps:
     includePreviewVersions: true
 
 - task: Bash@3
+  displayName: Opa Binaries
+  inputs:
+    filePath: fake.sh
+    arguments: ./fake.sh run build.fsx -t opa-binaries --single-target
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)
+  condition: succeeded()
+
+- task: Bash@3
+  displayName: Test
+  inputs:
+    filePath: fake.sh
+    arguments: build --target test
+  env:
+    GITHUB_TOKEN: $(GITHUB_TOKEN)
+  condition: succeeded()
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'NUnit'
+    testResultsFiles: '$(System.DefaultWorkingDirectory)/testResults.xml'
+    failTaskOnFailedTests: true
+
+- task: Bash@3
   displayName: GitHub Release
   inputs:
     filePath: fake.sh
@@ -49,11 +73,4 @@ steps:
   env:
     GITHUB_TOKEN: $(GITHUB_TOKEN)
     NUGET_KEY: $(NUGET_KEY)
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'NUnit'
-    testResultsFiles: '$(System.DefaultWorkingDirectory)/testResults.xml'
-    failTaskOnFailedTests: true
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
