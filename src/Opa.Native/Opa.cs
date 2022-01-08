@@ -6,12 +6,34 @@ namespace Opa.Native;
 
 public class Opa
 {
-    public OpaServerHandle RunServer() => Execute(psi =>
+    public async Task<OpaHandle> StartServerAsync()
     {
-        psi.Arguments = "run --server --format json-pretty --log-level debug";
-    });
+        var tcs = new TaskCompletionSource<OpaHandle>();
+        Execute(psi =>
+        {
+            psi.Arguments = "run --server --format json-pretty --log-level debug";
+            psi.RedirectStandardOutput = true;
+            psi.RedirectStandardError = true;
+            psi.UseShellExecute = false;
+        }, (p, h) =>
+        {
+            void WaitForServerUp(object sender, DataReceivedEventArgs args)
+            {
+                if (args.Data is not null && args.Data.Contains("Server initialized."))
+                {
+                    p.OutputDataReceived -= WaitForServerUp;
+                    p.ErrorDataReceived -= WaitForServerUp;
+                    tcs.SetResult(h);
+                }
+            }
+            p.OutputDataReceived += WaitForServerUp;
+            p.ErrorDataReceived += WaitForServerUp;
+        });
 
-    public OpaServerHandle Execute(Action<ProcessStartInfo> configure)
+        return await tcs.Task;
+    }
+
+    public OpaHandle Execute(Action<ProcessStartInfo> configure, Action<Process, OpaHandle>? onProcessStarted = null)
     {
         static string GetOpaBinaryPath()
         {
@@ -26,6 +48,7 @@ public class Opa
             return System.IO.Path.GetFullPath(osSpecificDir, asmLocation);
         }
         var cts = new CancellationTokenSource();
+        var tcs = new TaskCompletionSource<int>();
         var psi = new ProcessStartInfo
         {
             CreateNoWindow = true,
@@ -34,9 +57,11 @@ public class Opa
         configure(psi);
         var p = Process.Start(psi);
         if (p is null) throw new InvalidOperationException("Opa server failed starting");
+        var handle = new OpaHandle(tcs.Task, cts);
+        onProcessStarted?.Invoke(p, handle);
         if (psi.RedirectStandardOutput) p.BeginOutputReadLine();
         if (psi.RedirectStandardError) p.BeginErrorReadLine();
-        var tcs = new TaskCompletionSource<int>();
+
         cts.Token.Register(() =>
         {
             try
@@ -54,6 +79,6 @@ public class Opa
         {
             if (sender is Process x) tcs.TrySetResult(x.ExitCode);
         };
-        return new OpaServerHandle(tcs.Task, cts);
+        return handle;
     }
 }

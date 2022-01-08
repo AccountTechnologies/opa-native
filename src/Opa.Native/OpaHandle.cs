@@ -3,12 +3,12 @@ using System.Threading.Tasks;
 
 namespace Opa.Native;
 
-public sealed class OpaServerHandle : IDisposable, IAsyncDisposable
+public sealed class OpaHandle : IDisposable, IAsyncDisposable
 {
     private readonly Task<int> _processTask;
     private readonly CancellationTokenSource _cts;
 
-    public OpaServerHandle(Task<int> processTask, CancellationTokenSource cts)
+    public OpaHandle(Task<int> processTask, CancellationTokenSource cts)
     {
         _processTask = processTask;
         _cts = cts;
