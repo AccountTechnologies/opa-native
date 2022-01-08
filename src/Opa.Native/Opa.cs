@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace Opa.Native;
 
-public class Opa
+public static class OpaProcess
 {
-    public async Task<OpaHandle> StartServerAsync()
+    public static async Task<OpaHandle> StartServerAsync()
     {
         var tcs = new TaskCompletionSource<OpaHandle>();
         Execute(psi =>
@@ -21,19 +21,17 @@ public class Opa
             {
                 if (args.Data is not null && args.Data.Contains("Server initialized."))
                 {
-                    p.OutputDataReceived -= WaitForServerUp;
                     p.ErrorDataReceived -= WaitForServerUp;
                     tcs.SetResult(h);
                 }
             }
-            p.OutputDataReceived += WaitForServerUp;
             p.ErrorDataReceived += WaitForServerUp;
         });
 
         return await tcs.Task;
     }
 
-    public OpaHandle Execute(Action<ProcessStartInfo> configure, Action<Process, OpaHandle>? onProcessStarted = null)
+    public static OpaHandle Execute(Action<ProcessStartInfo> configure, Action<Process, OpaHandle>? onProcessStarted = null)
     {
         static string GetOpaBinaryPath()
         {
