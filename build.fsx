@@ -119,10 +119,10 @@ Target.create "nuget-release" <| fun _ ->
   =?> ("opa-binaries", BuildServer.isLocalBuild)
   ==> "test"
   ==> "pack"
-  =?> ("nuget-release", BuildServer.isLocalBuild || Environment.environVar "Agent.OS" = "Linux")
+  ==> "nuget-release"
 
 "clean"
-  =?> ("gh-release", newRelease.IsSome && (BuildServer.isLocalBuild || Environment.environVar "Agent.OS" = "Linux"))
+  =?> ("gh-release", newRelease.IsSome)
 
 let ctx = Target.WithContext.runOrDefault "clean"
 Target.updateBuildStatus ctx
