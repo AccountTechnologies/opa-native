@@ -19,7 +19,9 @@ public static class OpaProcess
         {
             void WaitForServerUp(object sender, DataReceivedEventArgs args)
             {
-                if (args.Data is not null && args.Data.Contains("Server initialized."))
+                if (args.Data is null) return;
+                Debug.WriteLine(args.Data);
+                if (args.Data.Contains("Server initialized."))
                 {
                     p.ErrorDataReceived -= WaitForServerUp;
                     tcs.SetResult(h);
