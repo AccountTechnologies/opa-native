@@ -20,7 +20,7 @@ public static class OpaProcess
             void WaitForServerUp(object sender, DataReceivedEventArgs args)
             {
                 if (args.Data is null) return;
-                Debug.WriteLine(args.Data);
+                Trace.WriteLine(args.Data);
                 if (args.Data.Contains("Server initialized."))
                 {
                     p.ErrorDataReceived -= WaitForServerUp;

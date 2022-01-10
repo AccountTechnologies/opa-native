@@ -9,6 +9,7 @@
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageDescription>OPA server native binaries</PackageDescription>
     <RepositoryUrl>https://github.com/AccountTechnologies/opa-native</RepositoryUrl>
+    <DefineTrace>true</DefineTrace>
   </PropertyGroup>
 
   <ItemGroup>
